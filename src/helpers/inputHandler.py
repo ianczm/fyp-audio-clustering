@@ -28,10 +28,11 @@ class RawAudioHandler:
             self.audio_files = audio_files
 
     def load(self):
-        with ProcessPoolExecutor() as ec:
-            self.data = list(ec.map(self.__load_one, self.audio_files))
+        # with ProcessPoolExecutor() as ec:
+        #     self.data = list(ec.map(self.__load_one, self.audio_files))
         # with Pool() as pool:
         #     self.data = pool.map(self.__load_one, self.audio_files)
+        self.data = list(map(self.__load_one, self.audio_files))
         return self.data
 
     def __load_one(self, audio_file: str):
@@ -50,7 +51,7 @@ class AudioProcessor:
 
     # Storage Variables
     audio: AudioData
-    feature_vector = FeatureVector()
+    feature_vector: FeatureVector
     feature_repr = FeatureRepresentation()
 
     # Intermediate Variables
@@ -65,6 +66,7 @@ class AudioProcessor:
                  frame_size=2048,
                  chord_map=CHORD_MAP,
                  ignore_non_chords=True):
+        self.feature_vector = FeatureVector(audio=audio)
         self.audio = audio
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
@@ -95,6 +97,8 @@ class AudioProcessor:
         self.__to_tonnetz(self.feature_repr.chroma_cqt_sync)        # 3.1
         self.__to_chord_trajectory(self.feature_repr.chroma_cqt)    # 3.2
 
+        return self.feature_vector, self.feature_repr
+
     def __to_spectrogram(self):
         stft_data = librosa.stft(self.audio.waveform)
         spectrogram = librosa.amplitude_to_db(np.abs(stft_data), ref=np.max)
@@ -113,7 +117,7 @@ class AudioProcessor:
         self.feature_vector.spectral.spectral_centroid_mean = spectral_centroid.mean()
         self.feature_vector.spectral.spectral_centroid_var = spectral_centroid.var()
 
-        self.feature_repr.spectral_centroid = spectral_centroid
+        self.feature_repr.spectral_centroid = spectral_centroid[0]
 
     def __to_spectral_rolloff(self):
         spectral_rolloff = librosa.feature.spectral_rolloff(y=self.audio.waveform, sr=self.audio.sample_rate)
@@ -121,7 +125,7 @@ class AudioProcessor:
         self.feature_vector.spectral.spectral_rolloff_mean = spectral_rolloff.mean()
         self.feature_vector.spectral.spectral_rolloff_var = spectral_rolloff.var()
 
-        self.feature_repr.spectral_rolloff = spectral_rolloff
+        self.feature_repr.spectral_rolloff = spectral_rolloff[0]
 
     def __to_spectral_flux(self):
         # Spectral flux
@@ -148,7 +152,7 @@ class AudioProcessor:
         self.feature_vector.spectral.mfcc_var_4 = cepstral_coefficients[4].var()
         self.feature_vector.spectral.mfcc_var_5 = cepstral_coefficients[5].var()
 
-        self.feature_repr.mfccs = cepstral_coefficients
+        self.feature_repr.mfccs = cepstral_coefficients[1:6]
 
     def __to_zero_crossings(self):
         zero_crossings = librosa.zero_crossings(y=self.audio.waveform)
@@ -229,7 +233,7 @@ class AudioProcessor:
     def __construct_chord_trajectory(self, chord_beat_matrix: pd.DataFrame):
         chord_count = len(self.chord_map)
         max_chord = chord_count - 1
-        chord_trajectory = np.zeroes(shape=(chord_count, chord_count))
+        chord_trajectory = np.zeros(shape=(chord_count, chord_count))
 
         for x in range(0, chord_beat_matrix.shape[0]-1):
             chord_x = chord_beat_matrix['chord'].iloc[x]

@@ -56,11 +56,11 @@ class HarmonicFeatures(AbstractFeature):
 @dataclass(kw_only=True)
 class FeatureVector(AbstractFeature):
     # Only used for processing
-    audio: Optional[AudioData] = None
+    audio: AudioData
     # Will be converted to DataFrame
-    temporal: Optional[TemporalFeatures] = None
-    spectral: Optional[SpectralFeatures] = None
-    harmonic: Optional[HarmonicFeatures] = None
+    temporal = TemporalFeatures()
+    spectral = SpectralFeatures()
+    harmonic = HarmonicFeatures()
 
     def as_dict(self):
         return self.temporal.as_dict() \
