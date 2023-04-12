@@ -11,6 +11,7 @@ class AbstractFeature:
 
 @dataclass(kw_only=True)
 class AudioData(AbstractFeature):
+    name: str
     # given by librosa.load()
     waveform: Optional[ndarray] = None
     sample_rate: Optional[float] = None
@@ -58,9 +59,9 @@ class FeatureVector(AbstractFeature):
     # Only used for processing
     audio: AudioData
     # Will be converted to DataFrame
-    temporal = TemporalFeatures()
-    spectral = SpectralFeatures()
-    harmonic = HarmonicFeatures()
+    temporal: TemporalFeatures
+    spectral: SpectralFeatures
+    harmonic: HarmonicFeatures
 
     def as_dict(self):
         return self.temporal.as_dict() \

@@ -1,6 +1,7 @@
 from glob import glob
 import numpy as np
 import pandas as pd
+import os
 
 from src.models.features import *
 from src.helpers.constants import CHORD_MAP, MIDI_MAX_NOTE
@@ -19,11 +20,18 @@ from multiprocessing import Pool
 class RawAudioHandler:
     audio_files: list[str]
     data: list[AudioData]
+    path_to_directory: str
+    limit: int
 
     def __init__(self, path_to_directory: str, limit: int = 0):
-        audio_files = glob(path_to_directory + '/*.mp3')
-        if limit > 0:
-            self.audio_files = audio_files[:limit]
+        self.path_to_directory = path_to_directory
+        self.limit = limit
+        self.__read_filenames()
+
+    def __read_filenames(self):
+        audio_files = glob(self.path_to_directory + '/*.mp3')
+        if self.limit > 0:
+            self.audio_files = audio_files[:self.limit]
         else:
             self.audio_files = audio_files
 
@@ -37,7 +45,12 @@ class RawAudioHandler:
 
     def __load_one(self, audio_file: str):
         waveform, sample_rate = librosa.load(audio_file)
-        return AudioData(waveform=waveform, sample_rate=sample_rate)
+        name = self.__path_to_song_name(audio_file)
+        return AudioData(name=name, waveform=waveform, sample_rate=sample_rate)
+
+    def __path_to_song_name(self, path: str):
+        filename = path.partition(self.path_to_directory + os.path.sep)[2]
+        return filename.partition('.mp3')[0]
 
 
 class AudioProcessor:
@@ -66,7 +79,12 @@ class AudioProcessor:
                  frame_size=2048,
                  chord_map=CHORD_MAP,
                  ignore_non_chords=True):
-        self.feature_vector = FeatureVector(audio=audio)
+        self.feature_vector = FeatureVector(
+            audio=audio,
+            spectral=SpectralFeatures(),
+            temporal=TemporalFeatures(),
+            harmonic=HarmonicFeatures()
+        )
         self.audio = audio
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
@@ -92,10 +110,10 @@ class AudioProcessor:
         self.__to_note_trajectory()
 
         # Must be executed in order
-        self.__to_bpm()                                             # 1
-        self.__to_chroma_cqt(self.beat_frames)                      # 2
-        self.__to_tonnetz(self.feature_repr.chroma_cqt_sync)        # 3.1
-        self.__to_chord_trajectory(self.feature_repr.chroma_cqt)    # 3.2
+        self.__to_bpm()  # 1
+        self.__to_chroma_cqt(self.beat_frames)  # 2
+        self.__to_tonnetz(self.feature_repr.chroma_cqt_sync)  # 3.1
+        self.__to_chord_trajectory(self.feature_repr.chroma_cqt)  # 3.2
 
         return self.feature_vector, self.feature_repr
 
@@ -139,7 +157,8 @@ class AudioProcessor:
 
     def __to_mfcc(self):
         # 13 MFCC coefficients, and using only the first 5 excluding DC component
-        cepstral_coefficients = librosa.feature.mfcc(y=self.audio.waveform, sr=self.audio.sample_rate, n_mfcc=self.n_mfcc)
+        cepstral_coefficients = librosa.feature.mfcc(y=self.audio.waveform, sr=self.audio.sample_rate,
+                                                     n_mfcc=self.n_mfcc)
 
         self.feature_vector.spectral.mfcc_mean_1 = cepstral_coefficients[1].mean()
         self.feature_vector.spectral.mfcc_mean_2 = cepstral_coefficients[2].mean()
@@ -235,9 +254,9 @@ class AudioProcessor:
         max_chord = chord_count - 1
         chord_trajectory = np.zeros(shape=(chord_count, chord_count))
 
-        for x in range(0, chord_beat_matrix.shape[0]-1):
+        for x in range(0, chord_beat_matrix.shape[0] - 1):
             chord_x = chord_beat_matrix['chord'].iloc[x]
-            chord_y = chord_beat_matrix['chord'].iloc[x+1]
+            chord_y = chord_beat_matrix['chord'].iloc[x + 1]
 
             if self.ignore_non_chords:
                 if chord_x == max_chord and chord_y == max_chord:
@@ -258,7 +277,7 @@ class AudioProcessor:
         return chord_trajectory
 
     def __to_note_trajectory(self):
-        note_peak_proc = notes.NotePeakPickingProcessor(fps=self.audio.sample_rate/self.hop_length)
+        note_peak_proc = notes.NotePeakPickingProcessor(fps=self.audio.sample_rate / self.hop_length)
         piano_note_proc = notes.RNNPianoNoteProcessor()(self.audio.waveform)
         note_time_matrix = note_peak_proc(piano_note_proc)
 
@@ -271,9 +290,9 @@ class AudioProcessor:
     def __construct_note_trajectory(self, note_time_matrix: ndarray):
         note_trajectory = np.zeros(shape=(MIDI_MAX_NOTE, MIDI_MAX_NOTE))
 
-        for x in range(note_time_matrix.shape[0]-1):
+        for x in range(note_time_matrix.shape[0] - 1):
             note_x = int(note_time_matrix[x][1])
-            note_y = int(note_time_matrix[x+1][1])
+            note_y = int(note_time_matrix[x + 1][1])
             note_trajectory[note_y, note_x] += 1
 
         return note_trajectory
@@ -281,12 +300,3 @@ class AudioProcessor:
     # Todo: implement (dimensionality reduction)
     def __process_note_trajectory_as_feature(self, note_trajectory: ndarray):
         return note_trajectory
-
-
-
-
-
-
-
-
-
