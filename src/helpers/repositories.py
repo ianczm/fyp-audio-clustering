@@ -19,9 +19,12 @@ class AudioRepository:
                 pickle.dump(audio, f)
 
     @staticmethod
-    def load_processed_audio(directory):
-        files = glob(directory + '/*.data')
-        processed_audio = []
+    def load_processed_audio(directory: str, start: int = 0, limit: int = 0):
+        processed_audio: list[tuple[FeatureVector, FeatureRepresentation]] = []
+        if limit > 0:
+            files = glob(directory + '/*.data')[start:start + limit]
+        else:
+            files = glob(directory + '/*.data')
         for file in files:
             with open(file, 'rb') as f:
                 processed_audio.append(pickle.load(f))
