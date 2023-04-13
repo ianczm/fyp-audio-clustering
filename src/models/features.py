@@ -16,6 +16,19 @@ class AudioData(AbstractFeature):
     waveform: Optional[ndarray] = None
     sample_rate: Optional[float] = None
 
+    def as_dict(self):
+        return {
+            'song_name': self.get_song_name(),
+            'artist': self.get_artists()[0]
+        }
+
+    def get_artists(self):
+        # name: Artist1, Artist2 - Title
+        return self.name.partition(' - ')[0].split(', ')
+
+    def get_song_name(self):
+        return self.name.partition(' - ')[2]
+
 
 @dataclass(kw_only=True)
 class TemporalFeatures(AbstractFeature):
@@ -51,7 +64,7 @@ class HarmonicFeatures(AbstractFeature):
     # 2 arrays based on clustering paper
     chord_trajectory: Optional[ndarray] = None
     note_trajectory: Optional[ndarray] = None
-    key_signature: Optional[int] = None # pitch class
+    key_signature: Optional[int] = None  # pitch class
 
 
 @dataclass(kw_only=True)
@@ -64,9 +77,10 @@ class FeatureVector(AbstractFeature):
     harmonic: HarmonicFeatures
 
     def as_dict(self):
-        return self.temporal.as_dict() \
-            | self.spectral.as_dict() \
-            | self.harmonic.as_dict()
+        return self.audio.as_dict() \
+            | self.temporal.as_dict() \
+            | self.spectral.as_dict()
+            # | self.harmonic.as_dict()
 
 
 @dataclass(kw_only=True)
@@ -83,4 +97,3 @@ class FeatureRepresentation(AbstractFeature):
     mfccs: Optional[ndarray] = None
     chord_trajectory: Optional[ndarray] = None
     note_trajectory: Optional[ndarray] = None
-
