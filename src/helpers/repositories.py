@@ -1,9 +1,9 @@
-import pickle
 import os
+import pickle
 from glob import glob
-from src.models import *
 from pathlib import Path
 
+from src.models import *
 
 EXTRACTED_SUFFIX = '-extracted'
 

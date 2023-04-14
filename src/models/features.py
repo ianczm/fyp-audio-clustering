@@ -1,6 +1,7 @@
-from numpy import ndarray
 from dataclasses import dataclass, asdict
 from typing import Optional
+
+from numpy import ndarray
 
 
 @dataclass(kw_only=True)

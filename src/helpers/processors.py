@@ -1,19 +1,16 @@
 from glob import glob
-import numpy as np
-import pandas as pd
-import os
-
-from src.models.features import *
-from src.helpers.constants import CHORD_MAP, MIDI_MAX_NOTE
+from pathlib import Path
 
 import librosa
 import librosa.display
 import librosa.feature
 import librosa.onset
+import numpy as np
+import pandas as pd
 from madmom.features import notes, key, chords
-from sklearn.decomposition import PCA
 
-from pathlib import Path
+from src.helpers.constants import CHORD_MAP, MIDI_MAX_NOTE
+from src.models.features import *
 
 
 # Todo: Refactor to use Path exclusively

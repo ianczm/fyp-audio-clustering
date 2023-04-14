@@ -1,11 +1,10 @@
-from src.helpers.repositories import AudioRepository
-from src.helpers.processors import AudioDataProcessor, FeatureVectorProcessor
-from src.models import AudioData
-from concurrent.futures import ProcessPoolExecutor
-
 import argparse
 import os
-from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor
+
+from src.helpers.processors import AudioDataProcessor, FeatureVectorProcessor
+from src.helpers.repositories import AudioRepository
+from src.models import AudioData
 
 
 def parse_args() -> tuple[str, str]:
