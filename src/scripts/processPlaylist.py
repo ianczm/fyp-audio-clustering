@@ -37,8 +37,7 @@ def process(directory: str, audio_data: AudioData):
     print(f'Saved {audio_data.name}')
 
 
-def main():
-    raw_directory, extracted_directory = get_directory()
+def main(raw_directory: str, extracted_directory: str):
     raw_audio_handler = AudioDataProcessor(raw_directory)
     raw_audio = raw_audio_handler.load()
     with ProcessPoolExecutor() as ec:
@@ -47,4 +46,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(*get_directory())
