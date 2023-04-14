@@ -1,6 +1,6 @@
 import argparse
 import os
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, wait
 
 from src.helpers.processors import AudioDataProcessor, FeatureVectorProcessor
 from src.helpers.repositories import AudioRepository
@@ -37,16 +37,13 @@ def process(directory: str, audio_data: AudioData):
     print(f'Saved {audio_data.name}')
 
 
-def process_directory(directory: str):
-    return lambda audio_data: process(directory, audio_data)
-
-
 def main():
     raw_directory, extracted_directory = get_directory()
     raw_audio_handler = AudioDataProcessor(raw_directory)
     raw_audio = raw_audio_handler.load()
     with ProcessPoolExecutor() as ec:
-        ec.map(process_directory(extracted_directory), raw_audio)
+        futures = [ec.submit(process, extracted_directory, audio_data) for audio_data in raw_audio]
+        wait(futures)
 
 
 if __name__ == '__main__':

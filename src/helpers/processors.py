@@ -1,3 +1,4 @@
+from concurrent.futures import ProcessPoolExecutor
 from glob import glob
 from pathlib import Path
 
@@ -33,10 +34,12 @@ class AudioDataProcessor:
             self.audio_files = audio_files
 
     def load(self):
-        self.data = list(map(self.__load_one, self.audio_files))
+        with ProcessPoolExecutor() as ec:
+            self.data = list(ec.map(AudioDataProcessor.load_one, self.audio_files))
         return self.data
 
-    def __load_one(self, audio_file: str):
+    @staticmethod
+    def load_one(audio_file: str):
         waveform, sample_rate = librosa.load(audio_file)
         name = Path(audio_file).stem
         return AudioData(name=name, waveform=waveform, sample_rate=sample_rate)
@@ -263,7 +266,7 @@ class FeatureVectorProcessor:
 
     # Todo: implement (dimensionality reduction)
     def __process_chord_trajectory_as_feature(self, chord_trajectory: ndarray):
-        return chord_trajectory
+        return chord_trajectory.flatten()
 
     def __to_note_trajectory(self):
         note_peak_proc = notes.NotePeakPickingProcessor(fps=self.audio.sample_rate / self.hop_length)
@@ -288,4 +291,4 @@ class FeatureVectorProcessor:
 
     # Todo: implement (dimensionality reduction)
     def __process_note_trajectory_as_feature(self, note_trajectory: ndarray):
-        return note_trajectory
+        return note_trajectory.flatten()
