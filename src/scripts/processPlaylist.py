@@ -33,7 +33,7 @@ def process(directory: str, audio_data: AudioData):
     print(f'Processing {audio_data.name}')
     processed = FeatureVectorProcessor(audio_data).process()
     print(f'Done {audio_data.name}')
-    AudioRepository.store_processed_audio(directory, processed)
+    AudioRepository.store_one_processed_audio(directory, processed)
     print(f'Saved {audio_data.name}')
 
 

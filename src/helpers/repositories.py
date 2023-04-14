@@ -8,8 +8,10 @@ from src.models import *
 
 
 class AudioRepository:
+
+    # Todo: Store vectors and representations separately for better memory management
     @staticmethod
-    def store_processed_audio(directory: str, processed_audio: tuple[FeatureVector, FeatureRepresentation]):
+    def store_one_processed_audio(directory: str, processed_audio: tuple[FeatureVector, FeatureRepresentation]):
         vector, _ = processed_audio
         directory = directory
         if not os.path.exists(directory):
