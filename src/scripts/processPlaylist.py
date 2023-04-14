@@ -8,16 +8,19 @@ import os
 from pathlib import Path
 
 
-def parse_args() -> str:
+def parse_args() -> tuple[str, str]:
     parser = argparse.ArgumentParser()
-    parser.add_argument('directory')
+    parser.add_argument('raw_dir')
+    parser.add_argument('extracted_dir')
     args = parser.parse_args()
-    return args['directory']
+    return args['raw_dir'], args['extracted_dir']
 
 
 # Use environment variable DISABLE_CLI=1 to enable CLI input
 def prompt_args():
-    return input('Playlist directory: ')
+    raw = input('Raw playlist directory: ')
+    extracted = input('Extracted playlist directory: ')
+    return raw, extracted
 
 
 def get_directory():
@@ -40,11 +43,11 @@ def process_directory(directory: str):
 
 
 def main():
-    directory = get_directory()
-    raw_audio_handler = RawAudioHandler(directory)
+    raw_directory, extracted_directory = get_directory()
+    raw_audio_handler = RawAudioHandler(raw_directory)
     raw_audio = raw_audio_handler.load()
     with ProcessPoolExecutor() as ec:
-        ec.map(process_directory(directory), raw_audio)
+        ec.map(process_directory(extracted_directory), raw_audio)
 
 
 if __name__ == '__main__':
