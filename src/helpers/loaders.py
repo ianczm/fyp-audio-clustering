@@ -13,10 +13,10 @@ import librosa.onset
 from madmom.features import notes, key, chords
 from sklearn.decomposition import PCA
 
-from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import Pool
+from pathlib import Path
 
 
+# Todo: Refactor to use Path exclusively
 class RawAudioHandler:
     audio_files: list[str]
     data: list[AudioData]
@@ -36,21 +36,13 @@ class RawAudioHandler:
             self.audio_files = audio_files
 
     def load(self):
-        # with ProcessPoolExecutor() as ec:
-        #     self.data = list(ec.map(self.__load_one, self.audio_files))
-        # with Pool() as pool:
-        #     self.data = pool.map(self.__load_one, self.audio_files)
         self.data = list(map(self.__load_one, self.audio_files))
         return self.data
 
     def __load_one(self, audio_file: str):
         waveform, sample_rate = librosa.load(audio_file)
-        name = self.__path_to_song_name(audio_file)
+        name = Path(audio_file).stem
         return AudioData(name=name, waveform=waveform, sample_rate=sample_rate)
-
-    def __path_to_song_name(self, path: str):
-        filename = path.partition(self.path_to_directory + os.path.sep)[2]
-        return filename.partition('.mp3')[0]
 
 
 class AudioProcessor:

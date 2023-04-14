@@ -2,6 +2,7 @@ import pickle
 import os
 from glob import glob
 from src.models import *
+from pathlib import Path
 
 
 EXTRACTED_SUFFIX = '-extracted'
@@ -32,7 +33,7 @@ class AudioRepository:
             for file in files:
                 with open(file, 'rb') as f:
                     loaded_object: tuple[FeatureVector, FeatureRepresentation] = pickle.load(f)
-                    loaded_object[0].audio.playlist = directory.split(os.path.sep)[-1]
+                    loaded_object[0].audio.playlist = Path(directory).name
                     processed_audio.append(loaded_object)
 
         return processed_audio
