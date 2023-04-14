@@ -17,7 +17,7 @@ from pathlib import Path
 
 
 # Todo: Refactor to use Path exclusively
-class RawAudioHandler:
+class AudioDataProcessor:
     audio_files: list[str]
     data: list[AudioData]
     path_to_directory: str
@@ -45,7 +45,7 @@ class RawAudioHandler:
         return AudioData(name=name, waveform=waveform, sample_rate=sample_rate)
 
 
-class AudioProcessor:
+class FeatureVectorProcessor:
     # Processing Parameters
     n_mels: int
     n_mfcc: int

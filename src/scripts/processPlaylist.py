@@ -1,5 +1,5 @@
 from src.helpers.repositories import AudioRepository
-from src.helpers.loaders import RawAudioHandler, AudioProcessor
+from src.helpers.processors import AudioDataProcessor, FeatureVectorProcessor
 from src.models import AudioData
 from concurrent.futures import ProcessPoolExecutor
 
@@ -32,7 +32,7 @@ def get_directory():
 
 def process(directory: str, audio_data: AudioData):
     print(f'Processing {audio_data.name}')
-    processed = AudioProcessor(audio_data).process()
+    processed = FeatureVectorProcessor(audio_data).process()
     print(f'Done {audio_data.name}')
     AudioRepository.store_processed_audio(directory, processed)
     print(f'Saved {audio_data.name}')
@@ -44,7 +44,7 @@ def process_directory(directory: str):
 
 def main():
     raw_directory, extracted_directory = get_directory()
-    raw_audio_handler = RawAudioHandler(raw_directory)
+    raw_audio_handler = AudioDataProcessor(raw_directory)
     raw_audio = raw_audio_handler.load()
     with ProcessPoolExecutor() as ec:
         ec.map(process_directory(extracted_directory), raw_audio)
