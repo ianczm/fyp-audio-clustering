@@ -6,8 +6,6 @@ from pathlib import Path
 
 from src.models import *
 
-EXTRACTED_SUFFIX = '-extracted'
-
 
 class AudioRepository:
     @staticmethod
