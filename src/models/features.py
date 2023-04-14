@@ -12,6 +12,7 @@ class AbstractFeature:
 @dataclass(kw_only=True)
 class AudioData(AbstractFeature):
     name: str
+    playlist: str = 'None'
     # given by librosa.load()
     waveform: Optional[ndarray] = None
     sample_rate: Optional[float] = None
@@ -19,7 +20,8 @@ class AudioData(AbstractFeature):
     def as_dict(self):
         return {
             'song_name': self.get_song_name(),
-            'artist': self.get_artists()[0]
+            'artist': self.get_artists()[0],
+            'playlist': self.playlist
         }
 
     def get_artists(self):

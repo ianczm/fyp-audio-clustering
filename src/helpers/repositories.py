@@ -18,14 +18,21 @@ class AudioRepository:
             with open(f'{directory}/{vector.audio.name}.data', 'wb') as f:
                 pickle.dump(audio, f)
 
+    # dir_start: which index to start from in each directory
+    # dir_limit: how many songs to extract per directory
     @staticmethod
-    def load_processed_audio(directory: str, start: int = 0, limit: int = 0):
+    def load_processed_audio(directories: list[str], dir_start: int = 0, dir_limit: int = 0):
         processed_audio: list[tuple[FeatureVector, FeatureRepresentation]] = []
-        if limit > 0:
-            files = glob(directory + '/*.data')[start:start + limit]
-        else:
-            files = glob(directory + '/*.data')
-        for file in files:
-            with open(file, 'rb') as f:
-                processed_audio.append(pickle.load(f))
+
+        for directory in directories:
+            if dir_limit > 0:
+                files = glob(directory + '/*.data')[dir_start:dir_start + dir_limit]
+            else:
+                files = glob(directory + '/*.data')
+            for file in files:
+                with open(file, 'rb') as f:
+                    loaded_object: tuple[FeatureVector, FeatureRepresentation] = pickle.load(f)
+                    loaded_object[0].audio.playlist = directory.split(os.path.sep)[-1]
+                    processed_audio.append(loaded_object)
+
         return processed_audio
