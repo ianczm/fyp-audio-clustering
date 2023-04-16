@@ -1,0 +1,3 @@
+[submodule "scripts/spotify-downloader"]
+	path = scripts/spotify-downloader
+	url = https://github.com/ianczm/spotify-downloader.git

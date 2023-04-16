@@ -269,7 +269,8 @@ class FeatureVectorProcessor:
         return chord_trajectory.flatten()
 
     def __to_note_trajectory(self):
-        note_peak_proc = notes.NotePeakPickingProcessor(fps=self.audio.sample_rate / self.hop_length)
+        note_peak_proc = notes.NoteOnsetPeakPickingProcessor(
+            fps=self.audio.sample_rate / self.hop_length, pitch_offset=21)
         piano_note_proc = notes.RNNPianoNoteProcessor()(self.audio.waveform)
         note_time_matrix = note_peak_proc(piano_note_proc)
 
