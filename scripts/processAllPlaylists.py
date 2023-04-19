@@ -10,7 +10,7 @@ import processPlaylist
 def main():
     raw_dir = '../data/raw/*'
     raw_paths = [Path(directory) for directory in glob(raw_dir)]
-    extracted_paths = [Path(p.parent.parent, 'extracted-compressed', p.name) for p in raw_paths]
+    extracted_paths = [Path(p.parent.parent, 'extracted', p.name) for p in raw_paths]
     for r, e in zip(raw_paths, extracted_paths):
         processPlaylist.main(str(r), str(e))
 
