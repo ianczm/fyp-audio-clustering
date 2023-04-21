@@ -39,6 +39,10 @@ class TemporalFeatures(AbstractFeature):
     zero_crossings_mean: Optional[float] = None
     zero_crossings_var: Optional[float] = None
     bpm: Optional[float] = None
+    # 4, 13, 19, 20 according to Classification fo Drum Sounds (Perfecto Herrera)
+    # 4 Attack Zero-Crossing Rate
+    # 13 Decay Zero-Crossing Rate Variance
+    # 19, 20 Relative energy percent for bands 300-400 Hz, 5-7 KHz
 
 
 @dataclass(kw_only=True)
@@ -50,6 +54,9 @@ class SpectralFeatures(AbstractFeature):
     spectral_rolloff_var: Optional[float] = None
     spectral_flux_mean: Optional[float] = None
     spectral_flux_var: Optional[float] = None
+    # added according to Classification fo Drum Sounds (Perfecto Herrera)
+    spectral_flatness_mean: Optional[float] = None
+    spectral_flatness_var: Optional[float] = None
     mfcc_mean_1: Optional[float] = None
     mfcc_var_1: Optional[float] = None
     mfcc_mean_2: Optional[float] = None
@@ -60,6 +67,16 @@ class SpectralFeatures(AbstractFeature):
     mfcc_var_4: Optional[float] = None
     mfcc_mean_5: Optional[float] = None
     mfcc_var_5: Optional[float] = None
+    mfcc_mean_6: Optional[float] = None
+    mfcc_var_6: Optional[float] = None
+    mfcc_mean_7: Optional[float] = None
+    mfcc_var_7: Optional[float] = None
+    mfcc_mean_8: Optional[float] = None
+    mfcc_var_8: Optional[float] = None
+    mfcc_mean_9: Optional[float] = None
+    mfcc_var_9: Optional[float] = None
+    mfcc_mean_10: Optional[float] = None
+    mfcc_var_10: Optional[float] = None
 
 
 @dataclass(kw_only=True)
@@ -96,6 +113,7 @@ class FeatureRepresentation(AbstractFeature):
     spectral_centroid: Optional[ndarray] = None
     spectral_rolloff: Optional[ndarray] = None
     spectral_flux: Optional[ndarray] = None
+    spectral_flatness: Optional[ndarray] = None
     zero_crossings: Optional[ndarray] = None
     mfccs: Optional[ndarray] = None
     chord_trajectory: Optional[ndarray] = None

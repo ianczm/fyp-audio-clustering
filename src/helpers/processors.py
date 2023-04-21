@@ -94,6 +94,7 @@ class FeatureVectorProcessor:
         self.__to_spectral_centroid()
         self.__to_spectral_rolloff()
         self.__to_spectral_flux()
+        self.__to_spectral_flatness()
         self.__to_mfcc()
         # -- Temporal
         self.__to_zero_crossings()
@@ -147,23 +148,28 @@ class FeatureVectorProcessor:
 
         self.feature_repr.spectral_flux = spectral_flux
 
+    def __to_spectral_flatness(self):
+        # Spectral flatness
+        # high flatness = white noise, low flatness = musical
+        spectral_flatness = librosa.feature.spectral_flatness(y=self.audio.waveform)
+
+        self.feature_vector.spectral.spectral_flatness_mean = spectral_flatness.mean()
+        self.feature_vector.spectral.spectral_flatness_var = spectral_flatness.var()
+
+        self.feature_repr.spectral_flatness = spectral_flatness[0]
+
     def __to_mfcc(self):
+        max_mfcc = 10
+
         # 13 MFCC coefficients, and using only the first 5 excluding DC component
         cepstral_coefficients = librosa.feature.mfcc(y=self.audio.waveform, sr=self.audio.sample_rate,
                                                      n_mfcc=self.n_mfcc)
 
-        self.feature_vector.spectral.mfcc_mean_1 = cepstral_coefficients[1].mean()
-        self.feature_vector.spectral.mfcc_mean_2 = cepstral_coefficients[2].mean()
-        self.feature_vector.spectral.mfcc_mean_3 = cepstral_coefficients[3].mean()
-        self.feature_vector.spectral.mfcc_mean_4 = cepstral_coefficients[4].mean()
-        self.feature_vector.spectral.mfcc_mean_5 = cepstral_coefficients[5].mean()
-        self.feature_vector.spectral.mfcc_var_1 = cepstral_coefficients[1].var()
-        self.feature_vector.spectral.mfcc_var_2 = cepstral_coefficients[2].var()
-        self.feature_vector.spectral.mfcc_var_3 = cepstral_coefficients[3].var()
-        self.feature_vector.spectral.mfcc_var_4 = cepstral_coefficients[4].var()
-        self.feature_vector.spectral.mfcc_var_5 = cepstral_coefficients[5].var()
+        for i in range(1, max_mfcc+1):
+            setattr(self.feature_vector.spectral, f'mfcc_mean_{i}', cepstral_coefficients[i].mean())
+            setattr(self.feature_vector.spectral, f'mfcc_var_{i}', cepstral_coefficients[i].var())
 
-        self.feature_repr.mfccs = cepstral_coefficients[1:6]
+        self.feature_repr.mfccs = cepstral_coefficients[1:max_mfcc+1]
 
     def __to_zero_crossings(self):
         zero_crossings = librosa.zero_crossings(y=self.audio.waveform)
