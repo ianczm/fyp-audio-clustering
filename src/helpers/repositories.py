@@ -60,6 +60,28 @@ class PickleIO(AbstractIO):
 class PandasAudioRepository:
 
     @staticmethod
+    def load_all_feature_datasets(
+            extracted_directory: str
+    ):
+        def get_feature_paths(extracted_directory: str):
+            folders = glob(extracted_directory + '/*')
+            results = []
+            for folder in folders:
+                for item in glob(folder + '/*'):
+                    if '.features' in item:
+                        results.append(item)
+            return results
+
+        def load_features(extracted_directory: str):
+            feature_paths = get_feature_paths(extracted_directory)
+            dataframes = []
+            for path in feature_paths:
+                dataframes.append(pd.read_pickle(path, compression='bz2'))
+            return pd.concat(dataframes, axis=0)
+
+        return load_features(extracted_directory)
+
+    @staticmethod
     def store_datasets(
             directory: str,
             processed_audio: list[tuple[FeatureVector, FeatureRepresentation]]
