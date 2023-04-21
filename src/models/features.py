@@ -84,7 +84,13 @@ class HarmonicFeatures(AbstractFeature):
     # 2 arrays based on clustering paper
     chord_trajectory: Optional[ndarray] = None
     note_trajectory: Optional[ndarray] = None
-    key_signature: Optional[int] = None  # pitch class
+    key_signature: Optional[int] = None  # pitch class, Todo: not included for now
+
+    def as_dict(self):
+        return {
+            'chord_trajectory': self.chord_trajectory.flatten(),
+            'note_trajectory': self.note_trajectory.flatten()
+        }
 
 
 @dataclass(kw_only=True)
@@ -99,8 +105,8 @@ class FeatureVector(AbstractFeature):
     def as_dict(self):
         return self.audio.as_dict() \
             | self.temporal.as_dict() \
-            | self.spectral.as_dict()
-            # | self.harmonic.as_dict()
+            | self.spectral.as_dict() \
+            | self.harmonic.as_dict()
 
 
 @dataclass(kw_only=True)

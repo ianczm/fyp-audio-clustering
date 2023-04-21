@@ -1,9 +1,12 @@
 import os
 import pickle
+
 import bz2file as bz2
 from concurrent.futures import ProcessPoolExecutor, Future, as_completed
 from glob import glob
 from pathlib import Path
+
+import pandas as pd
 
 from src.models import *
 
@@ -35,7 +38,7 @@ class CompressIO(AbstractIO):
         
     @staticmethod
     def file_ext() -> str:
-        return '.data.pbz2'
+        return '.pkl.pbz2'
 
 
 class PickleIO(AbstractIO):
@@ -51,7 +54,54 @@ class PickleIO(AbstractIO):
         
     @staticmethod
     def file_ext() -> str:
-        return '.data'
+        return '.pkl'
+
+
+class PandasAudioRepository:
+
+    @staticmethod
+    def store_datasets(
+            directory: str,
+            processed_audio: list[tuple[FeatureVector, FeatureRepresentation]]
+    ):
+        name = Path(directory).name
+        vectors = [v for v, _ in processed_audio]
+        representations = [r for _, r in processed_audio]
+
+        dataset = PandasAudioRepository.store_feature_dataset(
+            directory,
+            name,
+            vectors
+        )
+
+        PandasAudioRepository.store_repr_dataset(
+            directory,
+            name,
+            dataset[['song_name', 'artist', 'playlist']],
+            representations
+        )
+
+    @staticmethod
+    def store_feature_dataset(
+            directory: str,
+            name: str,
+            vectors: list[FeatureVector]
+    ):
+        dataset = pd.DataFrame([v.as_dict() | {'playlist': name} for v in vectors])
+        dataset.to_pickle(str(Path(directory, name + '.features.pkl.pbz2')), compression='bz2')
+        return dataset
+
+    @staticmethod
+    def store_repr_dataset(
+            directory: str,
+            name: str,
+            metadata: pd.DataFrame,
+            representations: list[FeatureRepresentation]
+    ):
+        representations_dataset = pd.DataFrame([r.as_dict() for r in representations])
+        dataset = pd.concat([metadata, representations_dataset], axis=1)
+        dataset.to_pickle(str(Path(directory, name + '.representations.pkl.pbz2')), compression='bz2')
+        return dataset
 
 
 class AudioRepository:
@@ -70,13 +120,18 @@ class AudioRepository:
     @staticmethod
     def load_one_processed_audio(file: str):
         loaded_object: tuple[FeatureVector, FeatureRepresentation] = AudioRepository.io.load(file)
-        loaded_object[0].audio.playlist = Path(file).parent.name
+        name = Path(file).parent.name
+        loaded_object[0].audio.playlist = name
         return loaded_object
 
     # dir_start: which index to start from in each directory
     # dir_limit: how many songs to extract per directory
     @staticmethod
-    def load_processed_audio(directories: list[str], dir_start: int = 0, dir_limit: int = 0):
+    def load_processed_audio(
+            directories: list[str],
+            dir_start: int = 0,
+            dir_limit: int = 0
+    ):
         processed_audio_futures: list[Future[tuple[FeatureVector, FeatureRepresentation]]] = []
 
         with ProcessPoolExecutor() as ec:
@@ -86,8 +141,9 @@ class AudioRepository:
                 else:
                     files = glob(directory + '/*' + AudioRepository.io.file_ext())
                 for file in files:
-                    future = ec.submit(AudioRepository.load_one_processed_audio, file)
-                    processed_audio_futures.append(future)
+                    if '.features' not in file and '.representations' not in file:
+                        future = ec.submit(AudioRepository.load_one_processed_audio, file)
+                        processed_audio_futures.append(future)
             results = [future.result() for future in as_completed(processed_audio_futures)]
 
         return results
