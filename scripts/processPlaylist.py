@@ -10,22 +10,24 @@ from src.helpers.repositories import AudioRepository, CompressIO, PandasAudioRep
 from src.models import AudioData, FeatureVector, FeatureRepresentation
 
 
-def parse_args() -> tuple[str, str]:
+def parse_args() -> tuple[str, str, bool]:
     parser = argparse.ArgumentParser()
     parser.add_argument('raw_dir')
     parser.add_argument('extracted_dir')
+    parser.add_argument('--store-repr', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
-    return args['raw_dir'], args['extracted_dir']
+    return args['raw_dir'], args['extracted_dir'], args['--store-repr']
 
 
 # Use environment variable DISABLE_CLI=1 to enable CLI input
-def prompt_args():
+def prompt_args() -> tuple[str, str, bool]:
     raw = input('Raw playlist directory: ')
     extracted = input('Extracted playlist directory: ')
-    return raw, extracted
+    store_repr = input('Store representations? y/n: ')
+    return raw, extracted, store_repr.lower() == 'y'
 
 
-def get_directory():
+def get_args():
     if os.environ.get('DISABLE_CLI') == '1':
         return prompt_args()
     else:
@@ -45,11 +47,11 @@ def process(directory: str, audio_data: AudioData):
     print(f'Saved {audio_data.name}')
 
 
-def process_without_saving(audio_data: AudioData):
+def process_without_saving(audio_data: AudioData, save_repr: bool):
     print(f'Processing {audio_data.name}')
-    processed = FeatureVectorProcessor(audio_data).process()
+    processed_audio = FeatureVectorProcessor(audio_data, save_repr).process()
     print(f'Done Processing {audio_data.name}')
-    return processed
+    return processed_audio
 
 
 def load_raw_audio(raw_directory: str, limit: int = 0):
@@ -78,17 +80,32 @@ def save_repr_as_pickle(feature_repr: FeatureRepresentation, directory: str):
     print(f'Saved repr as pickle for {Path(directory).name}')
 
 
-def main(raw_directory: str, extracted_directory: str):
+def main(raw_directory: str, extracted_directory: str, save_repr: bool):
+    print(raw_directory, extracted_directory, save_repr)
     raw_audio = load_raw_audio(raw_directory)
     create_directory(extracted_directory)
     with ProcessPoolExecutor() as ec:
-        processed_audio = list(ec.map(process_without_saving, raw_audio))
+        processed_audio = list(ec.map(
+            process_without_saving,
+            raw_audio,
+            [save_repr for _ in range(len(raw_audio))]
+        ))
     print(f'Saving datasets...')
-    PandasAudioRepository.store_datasets(extracted_directory, processed_audio)
+    if save_repr:
+        PandasAudioRepository.store_datasets(
+            extracted_directory,
+            processed_audio
+        )
+    else:
+        PandasAudioRepository.store_feature_dataset(
+            extracted_directory,
+            Path(extracted_directory).name,
+            [v for v, _ in processed_audio]
+        )
     print(f'Saved datasets')
 
 
-def main_old(raw_directory: str, extracted_directory: str):
+def main_old(raw_directory: str, extracted_directory: str, save_repr: bool):
     raw_audio = load_raw_audio(raw_directory)
     create_directory(extracted_directory)
     with ProcessPoolExecutor() as ec:
@@ -97,4 +114,4 @@ def main_old(raw_directory: str, extracted_directory: str):
 
 
 if __name__ == '__main__':
-    main(*get_directory())
+    main(*get_args())

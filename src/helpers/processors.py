@@ -65,6 +65,7 @@ class FeatureVectorProcessor:
 
     def __init__(self,
                  audio: AudioData,
+                 save_repr=False,
                  n_mels=256,
                  n_mfcc=13,
                  hop_length=512,
@@ -78,6 +79,7 @@ class FeatureVectorProcessor:
             harmonic=HarmonicFeatures()
         )
         self.audio = audio
+        self.save_repr = save_repr
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
         self.hop_length = hop_length
@@ -114,13 +116,15 @@ class FeatureVectorProcessor:
         stft_data = librosa.stft(self.audio.waveform)
         spectrogram = librosa.amplitude_to_db(np.abs(stft_data), ref=np.max)
 
-        self.feature_repr.spectrogram = spectrogram
+        if self.save_repr:
+            self.feature_repr.spectrogram = spectrogram
 
     def __to_mel_spectrogram(self):
         mel_data = librosa.feature.melspectrogram(y=self.audio.waveform, sr=self.audio.sample_rate, n_mels=self.n_mels)
         mel_spectrogram = librosa.amplitude_to_db(np.abs(mel_data), ref=np.max)
 
-        self.feature_repr.mel_spectrogram = mel_spectrogram
+        if self.save_repr:
+            self.feature_repr.mel_spectrogram = mel_spectrogram
 
     def __to_spectral_centroid(self):
         spectral_centroid = librosa.feature.spectral_centroid(y=self.audio.waveform, sr=self.audio.sample_rate)
@@ -128,7 +132,8 @@ class FeatureVectorProcessor:
         self.feature_vector.spectral.spectral_centroid_mean = spectral_centroid.mean()
         self.feature_vector.spectral.spectral_centroid_var = spectral_centroid.var()
 
-        self.feature_repr.spectral_centroid = spectral_centroid[0]
+        if self.save_repr:
+            self.feature_repr.spectral_centroid = spectral_centroid[0]
 
     def __to_spectral_rolloff(self):
         spectral_rolloff = librosa.feature.spectral_rolloff(y=self.audio.waveform, sr=self.audio.sample_rate)
@@ -136,7 +141,8 @@ class FeatureVectorProcessor:
         self.feature_vector.spectral.spectral_rolloff_mean = spectral_rolloff.mean()
         self.feature_vector.spectral.spectral_rolloff_var = spectral_rolloff.var()
 
-        self.feature_repr.spectral_rolloff = spectral_rolloff[0]
+        if self.save_repr:
+            self.feature_repr.spectral_rolloff = spectral_rolloff[0]
 
     def __to_spectral_flux(self):
         # Spectral flux
@@ -146,7 +152,8 @@ class FeatureVectorProcessor:
         self.feature_vector.spectral.spectral_flux_mean = spectral_flux.mean()
         self.feature_vector.spectral.spectral_flux_var = spectral_flux.var()
 
-        self.feature_repr.spectral_flux = spectral_flux
+        if self.save_repr:
+            self.feature_repr.spectral_flux = spectral_flux
 
     def __to_spectral_flatness(self):
         # Spectral flatness
@@ -156,7 +163,8 @@ class FeatureVectorProcessor:
         self.feature_vector.spectral.spectral_flatness_mean = spectral_flatness.mean()
         self.feature_vector.spectral.spectral_flatness_var = spectral_flatness.var()
 
-        self.feature_repr.spectral_flatness = spectral_flatness[0]
+        if self.save_repr:
+            self.feature_repr.spectral_flatness = spectral_flatness[0]
 
     def __to_mfcc(self):
         max_mfcc = 10
@@ -169,7 +177,8 @@ class FeatureVectorProcessor:
             setattr(self.feature_vector.spectral, f'mfcc_mean_{i}', cepstral_coefficients[i].mean())
             setattr(self.feature_vector.spectral, f'mfcc_var_{i}', cepstral_coefficients[i].var())
 
-        self.feature_repr.mfccs = cepstral_coefficients[1:max_mfcc+1]
+        if self.save_repr:
+            self.feature_repr.mfccs = cepstral_coefficients[1:max_mfcc+1]
 
     def __to_zero_crossings(self):
         zero_crossings = librosa.zero_crossings(y=self.audio.waveform)
@@ -177,7 +186,8 @@ class FeatureVectorProcessor:
         self.feature_vector.temporal.zero_crossings_mean = zero_crossings.mean()
         self.feature_vector.temporal.zero_crossings_var = zero_crossings.var()
 
-        self.feature_repr.zero_crossings = zero_crossings
+        if self.save_repr:
+            self.feature_repr.zero_crossings = zero_crossings
 
     def __to_key_signature(self):
         key_proc = key.CNNKeyRecognitionProcessor()
@@ -209,7 +219,11 @@ class FeatureVectorProcessor:
     # should be chroma_cqt_sync, but chroma_cqt works too
     def __to_tonnetz(self, chroma_cqt):
         tonnetz = librosa.feature.tonnetz(sr=self.audio.sample_rate, chroma=chroma_cqt)
-        self.feature_repr.tonnetz = tonnetz
+
+        self.feature_vector.harmonic.tonnetz = tonnetz
+
+        if self.save_repr:
+            self.feature_repr.tonnetz = tonnetz
 
     # Todo: must be synchronous, but ignore first
     # should be chroma_cqt
@@ -223,7 +237,8 @@ class FeatureVectorProcessor:
 
         # Accumulate occurrences into a chord trajectory matrix
         chord_trajectory = self.__construct_chord_trajectory(chord_beat_df)
-        self.feature_repr.chord_trajectory = chord_trajectory
+        if self.save_repr:
+            self.feature_repr.chord_trajectory = chord_trajectory
 
         # Process the matrix into the feature vector
         chord_vector = self.__process_chord_trajectory_as_feature(chord_trajectory)
@@ -281,7 +296,8 @@ class FeatureVectorProcessor:
         note_time_matrix = note_peak_proc(piano_note_proc)
 
         note_trajectory = self.__construct_note_trajectory(note_time_matrix)
-        self.feature_repr.note_trajectory = note_trajectory
+        if self.save_repr:
+            self.feature_repr.note_trajectory = note_trajectory
 
         note_vector = self.__process_note_trajectory_as_feature(note_trajectory)
         self.feature_vector.harmonic.note_trajectory = note_vector
