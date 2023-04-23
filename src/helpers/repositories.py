@@ -77,7 +77,7 @@ class PandasAudioRepository:
             dataframes = []
             for path in feature_paths:
                 dataframes.append(pd.read_pickle(path, compression='bz2'))
-            return pd.concat(dataframes, axis=0)
+            return pd.concat(dataframes, axis=0, ignore_index=True)
 
         return load_features(extracted_directory)
 
