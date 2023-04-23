@@ -84,12 +84,14 @@ class HarmonicFeatures(AbstractFeature):
     # 2 arrays based on clustering paper
     chord_trajectory: Optional[ndarray] = None
     note_trajectory: Optional[ndarray] = None
+    tonnetz: Optional[ndarray] = None
     key_signature: Optional[int] = None  # pitch class, Todo: not included for now
 
     def as_dict(self):
         return {
-            'chord_trajectory': self.chord_trajectory.flatten(),
-            'note_trajectory': self.note_trajectory.flatten()
+            'chord_trajectory': self.chord_trajectory,
+            'note_trajectory': self.note_trajectory,
+            'tonnetz': self.tonnetz
         }
 
 

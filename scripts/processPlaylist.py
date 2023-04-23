@@ -80,7 +80,7 @@ def save_repr_as_pickle(feature_repr: FeatureRepresentation, directory: str):
     print(f'Saved repr as pickle for {Path(directory).name}')
 
 
-def main(raw_directory: str, extracted_directory: str, save_repr: bool):
+def main(raw_directory: str, extracted_directory: str, save_repr: bool = False):
     print(raw_directory, extracted_directory, save_repr)
     raw_audio = load_raw_audio(raw_directory)
     create_directory(extracted_directory)

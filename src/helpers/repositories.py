@@ -86,7 +86,7 @@ class PandasAudioRepository:
             directory: str,
             processed_audio: list[tuple[FeatureVector, FeatureRepresentation]]
     ):
-        if not processed_audio:
+        if not processed_audio or not os.path.isdir(directory):
             return
 
         name = Path(directory).name

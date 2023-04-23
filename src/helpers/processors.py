@@ -9,8 +9,9 @@ import librosa.onset
 import numpy as np
 import pandas as pd
 from madmom.features import notes, key, chords
+from scipy.ndimage import zoom
 
-from src.helpers.constants import CHORD_MAP, MIDI_MAX_NOTE
+from src.helpers.constants import CHORD_MAP, MIDI_MAX_NOTE, TONNETZ_LENGTH
 from src.models.features import *
 
 
@@ -39,10 +40,17 @@ class AudioDataProcessor:
         return self.data
 
     @staticmethod
-    def load_one(audio_file: str):
+    def load_one(audio_file: str, playlist: str = None):
         waveform, sample_rate = librosa.load(audio_file)
         name = Path(audio_file).stem
-        return AudioData(name=name, waveform=waveform, sample_rate=sample_rate)
+        audio_data = AudioData(name=name, waveform=waveform, sample_rate=sample_rate)
+        if playlist is not None:
+            audio_data.playlist = playlist
+        return audio_data
+
+    @staticmethod
+    def load_spotify_song(url: str) -> AudioData:
+        pass
 
 
 class FeatureVectorProcessor:
@@ -51,6 +59,7 @@ class FeatureVectorProcessor:
     n_mfcc: int
     hop_length: int
     frame_size: int
+    tonnetz_length: int
     chord_map: dict
     ignore_non_chords: bool
 
@@ -70,6 +79,7 @@ class FeatureVectorProcessor:
                  n_mfcc=13,
                  hop_length=512,
                  frame_size=2048,
+                 tonnetz_length=TONNETZ_LENGTH,
                  chord_map=CHORD_MAP,
                  ignore_non_chords=True):
         self.feature_vector = FeatureVector(
@@ -83,6 +93,7 @@ class FeatureVectorProcessor:
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
         self.hop_length = hop_length
+        self.tonnetz_length = tonnetz_length
         self.frame_size = frame_size
         self.chord_map = chord_map
         self.ignore_non_chords = ignore_non_chords
@@ -220,7 +231,7 @@ class FeatureVectorProcessor:
     def __to_tonnetz(self, chroma_cqt):
         tonnetz = librosa.feature.tonnetz(sr=self.audio.sample_rate, chroma=chroma_cqt)
 
-        self.feature_vector.harmonic.tonnetz = tonnetz
+        self.feature_vector.harmonic.tonnetz = standardize_tonnetz(tonnetz, self.tonnetz_length)
 
         if self.save_repr:
             self.feature_repr.tonnetz = tonnetz
@@ -315,3 +326,13 @@ class FeatureVectorProcessor:
     # Todo: implement (dimensionality reduction)
     def __process_note_trajectory_as_feature(self, note_trajectory: ndarray):
         return note_trajectory.flatten()
+
+
+def standardize_tonnetz(tonnetz: ndarray, tonnetz_length: int = TONNETZ_LENGTH):
+    flattened_tonnetz = tonnetz.flatten()
+    if len(flattened_tonnetz) != tonnetz_length:
+        zoom_factor = tonnetz_length / len(flattened_tonnetz)
+        standardized_tonnetz = zoom(flattened_tonnetz, zoom_factor)
+        return standardized_tonnetz
+    else:
+        return flattened_tonnetz
