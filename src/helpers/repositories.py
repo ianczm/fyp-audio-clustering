@@ -86,6 +86,9 @@ class PandasAudioRepository:
             directory: str,
             processed_audio: list[tuple[FeatureVector, FeatureRepresentation]]
     ):
+        if not processed_audio:
+            return
+
         name = Path(directory).name
         vectors = [v for v, _ in processed_audio]
         representations = [r for _, r in processed_audio]
