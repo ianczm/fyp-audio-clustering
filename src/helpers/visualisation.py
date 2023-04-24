@@ -28,7 +28,8 @@ class Visualiser:
             color=color_by
         ).show()
 
-    def generate_hover_template(self, field_names: list[str]):
+    @staticmethod
+    def generate_hover_template(field_names: list[str]):
         return '<br>'.join([f'<b>{name}</b>: %{{customdata[{idx}]}}' for idx, name in enumerate(field_names)]) + '<extra></extra>'
 
     def generate_colour_feature_trace(self, fig: go.Figure, dataframe: pd.DataFrame, feature: str, row: int, col: int):
@@ -103,3 +104,31 @@ class Visualiser:
         fig.update_layout(title=f'{self.name} Perplexities', height=350*rows)
         fig.update_annotations(font={'size': 12})
         fig.show()
+
+
+def plot_subplots(options, title: str):
+    rows = len(options)
+    subplot_titles = [f'{heading}, {feature}' for _,_,features,heading in options for feature in features]
+    fig = make_subplots(rows=rows, cols=2, subplot_titles=subplot_titles)
+    for row, option in enumerate(options):
+        coordinates, metadata, features, heading = option
+        for col, feature in enumerate(features):
+            fig.add_trace(
+                go.Scatter(
+                    x=coordinates.iloc[:, 0],
+                    y=coordinates.iloc[:, 1],
+                    customdata=metadata.to_numpy(),
+                    mode='markers',
+                    hovertemplate=Visualiser.generate_hover_template(['playlist', 'artist', 'song_name', 'cluster']),
+                    showlegend=False,
+                    marker={
+                        'color': metadata[feature].astype('category').cat.codes,
+                        'colorscale': 'portland' if feature == 'cluster' else 'spectral'
+                    },
+                    name=feature
+                ), row=row+1, col=col+1
+            )
+    fig.update_layout(title=title, height=350*rows)
+    fig.update_annotations(font={'size': 12})
+    fig.show()
+
