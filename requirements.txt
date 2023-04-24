@@ -1,4 +1,5 @@
 bz2file==0.98
+keras==2.10.0
 librosa==0.10.0.post2
 madmom==0.17.dev0
 matplotlib==3.7.0
@@ -9,5 +10,5 @@ python-dotenv==1.0.0
 scikit_learn==1.2.2
 scipy==1.10.0
 seaborn==0.12.2
-spotdl==4.1.4
+spotdl==4.1.8
 spotipy==2.23.0
