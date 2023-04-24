@@ -63,7 +63,7 @@ class Visualiser:
                     col=(idx%cols)+1
                 )
                 idx += 1
-        fig.update_layout(title=f'{self.name} Result Coloured by Features', height=350*rows)
+        fig.update_layout(title=f'{self.name} Result Coloured by Features', height=350*rows, template='plotly_dark')
         fig.update_annotations(font={'size': 12})
         fig.show()
 
@@ -101,34 +101,50 @@ class Visualiser:
                 song_names=song_names
             )
 
-        fig.update_layout(title=f'{self.name} Perplexities', height=350*rows)
+        fig.update_layout(title=f'{self.name} Perplexities', height=350*rows, template='plotly_dark')
         fig.update_annotations(font={'size': 12})
         fig.show()
 
 
-def plot_subplots(options, title: str):
-    rows = len(options)
+def plot_subplots(options, title: str, cols: int = 2, col_for_each_feature: bool = True):
+    def add_trace(fig, coordinates, feature, metadata, row, col):
+        fig.add_trace(
+            go.Scatter(
+                x=coordinates.iloc[:, 0],
+                y=coordinates.iloc[:, 1],
+                customdata=metadata.to_numpy(),
+                mode='markers',
+                hovertemplate=Visualiser.generate_hover_template(['playlist', 'artist', 'song_name', 'cluster']),
+                showlegend=False,
+                marker={
+                    'color': metadata[feature].astype('category').cat.codes,
+                    'colorscale': 'portland' if feature == 'cluster' else 'spectral'
+                },
+                name=feature
+            ), row=row, col=col
+        )
+
+    rows = len(options) if col_for_each_feature else math.ceil(len(options) / cols)
+
     subplot_titles = [f'{heading}, {feature}' for _,_,features,heading in options for feature in features]
-    fig = make_subplots(rows=rows, cols=2, subplot_titles=subplot_titles)
-    for row, option in enumerate(options):
+    fig = make_subplots(rows=rows, cols=cols, subplot_titles=subplot_titles)
+
+    for idx, option in enumerate(options):
         coordinates, metadata, features, heading = option
         for col, feature in enumerate(features):
-            fig.add_trace(
-                go.Scatter(
-                    x=coordinates.iloc[:, 0],
-                    y=coordinates.iloc[:, 1],
-                    customdata=metadata.to_numpy(),
-                    mode='markers',
-                    hovertemplate=Visualiser.generate_hover_template(['playlist', 'artist', 'song_name', 'cluster']),
-                    showlegend=False,
-                    marker={
-                        'color': metadata[feature].astype('category').cat.codes,
-                        'colorscale': 'portland' if feature == 'cluster' else 'spectral'
-                    },
-                    name=feature
-                ), row=row+1, col=col+1
+            add_trace(
+                fig,
+                coordinates,
+                feature,
+                metadata,
+                idx+1 if col_for_each_feature else (math.floor(idx/cols)+1),
+                col+1 if col_for_each_feature else (idx % cols)+1
             )
-    fig.update_layout(title=title, height=350*rows)
+
+    fig.update_layout(title=title, height=350*rows, template='plotly_dark')
     fig.update_annotations(font={'size': 12})
     fig.show()
+
+
+
 
