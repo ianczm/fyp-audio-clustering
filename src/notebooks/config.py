@@ -7,8 +7,11 @@ visualisation_result_dir = '../../data/temp/1-visualisation.pkl.bz2'
 dim_reduction_result_dir = '../../data/temp/2-dim-reduction.pkl.bz2'
 normalised_result_dir = '../../data/temp/3-normalised.pkl.bz2'
 pca_result_dir = '../../data/temp/3-pca.pkl.bz2'
+pca_cluster_result_dir = '../../data/temp/3-pca-cluster.pkl.bz2'
 pca_loadings_dir = '../../data/temp/3-pca-loadings.pkl.bz2'
 tsne_result_dir = '../../data/temp/3-tsne.pkl.bz2'
+report_output_dir = '../../data/temp/report.html'
+image_dir = '../..//data/temp/images'
 
 metadata_columns = ['song_name', 'artist', 'playlist']
 

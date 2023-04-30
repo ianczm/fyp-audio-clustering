@@ -19,14 +19,14 @@ class Visualiser:
         return self.name + '2'
 
     def generate_plot_coloured_by_features(self, dataframe: pd.DataFrame, color_by: str):
-        px.scatter(
+        return px.scatter(
             dataframe,
             x=self.x_name(),
             y=self.y_name(),
             hover_data=['artist', 'song_name'],
             template='plotly_dark',
             color=color_by
-        ).show()
+        )
 
     @staticmethod
     def generate_hover_template(field_names: list[str]):
@@ -65,7 +65,7 @@ class Visualiser:
                 idx += 1
         fig.update_layout(title=f'{self.name} Result Coloured by Features', height=350*rows, template='plotly_dark')
         fig.update_annotations(font={'size': 12})
-        fig.show()
+        return fig
 
     def generate_tsne_trace(self, fig, tsne, row, col, playlists, artists, song_names):
         tsne['playlist'] = playlists
@@ -103,7 +103,7 @@ class Visualiser:
 
         fig.update_layout(title=f'{self.name} Perplexities', height=350*rows, template='plotly_dark')
         fig.update_annotations(font={'size': 12})
-        fig.show()
+        return fig
 
 
 def plot_subplots(options, title: str, cols: int = 2, col_for_each_feature: bool = True):
@@ -143,8 +143,4 @@ def plot_subplots(options, title: str, cols: int = 2, col_for_each_feature: bool
 
     fig.update_layout(title=title, height=350*rows, template='plotly_dark')
     fig.update_annotations(font={'size': 12})
-    fig.show()
-
-
-
-
+    return fig
