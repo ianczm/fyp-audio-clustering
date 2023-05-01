@@ -11,14 +11,15 @@ generated will also be saved to the [`/data/temp/images` folder](/data/temp/READ
 ### Table of Contents
 
 Notebooks must be run in this order if they are being run for the first time. This
-is to generate all the needed `temp` folders.
+is to generate all the needed `temp` folders. It is not necessary to run Notebook 0 as
+exists only to visualise the feature extraction process from an audio file.
 
-1. Feature Extraction
-2. Data Exploration
-3. MDS Embedding
-4. PCA Dimensionality Reduction
-5. T-SNE Hyper-Parameters
-6. T-SNE Visualisation and User Input
+0. Feature Extraction
+1. Data Exploration
+2. MDS Embedding
+3. PCA Dimensionality Reduction
+4. T-SNE Hyper-Parameters
+5. T-SNE Visualisation and User Input
 
 
 ---
