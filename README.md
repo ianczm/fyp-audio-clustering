@@ -95,7 +95,7 @@ If you prefer to use the Anaconda distribution, you can create
 a new virtual environment using `conda`.
 
 ```sh
-conda create -n <env-name>
+conda create -n <env-name> python=3.10.9
 conda activate <env-name>
 ```
 
