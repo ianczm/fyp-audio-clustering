@@ -76,7 +76,7 @@ If you prefer to use Anaconda, a popular data science platform that includes Pyt
 Clone this repository onto your local filesystem and then set it as the active directory.
 
 ```sh
-git clone https://github.com/ianczm/fyp-audio-clustering.git
+git clone --recurse-submodules https://github.com/ianczm/fyp-audio-clustering.git
 cd fyp-audio-clustering
 ```
 
