@@ -1,4 +1,4 @@
-**/temp*
 *.mp3
-*.data
 .idea
+data/temp/*
+!*.md
