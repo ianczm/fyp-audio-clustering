@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 from glob import glob
 from pathlib import Path
 import processPlaylist

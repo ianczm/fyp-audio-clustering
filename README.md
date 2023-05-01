@@ -134,16 +134,16 @@ python script.py
 
 Follow the prompts and set the output directory to `/data/raw/<playlist-name>`.
 
-Once the downloads are completed, go back to your root directory and run the
+Once the downloads are completed, go to the `/scripts` directory and run the
 `processAllPlaylists.py` script.
 
 ```sh
-cd ../../
-python scripts/processAllPlaylists.py
+cd ../
+python processAllPlaylists.py
 ```
 
-Your playlist of `.mp3` will be processed and the new dataset will be
-generated at `/data/extracted`.
+Follow the prompts. Your playlist of `.mp3` will be processed and the new dataset
+will be generated at `/data/extracted`.
 
 
 ### Run the Notebooks
