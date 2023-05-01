@@ -3,7 +3,7 @@ temp_dir = '../../data/temp/2d-pca-gmm.pkl.bz2'
 result_dir = '../../data/temp/2d-pca-gmm-results.pkl.bz2'
 
 fresh_load_dataset_dir = '../../data/temp/0-fresh-load.pkl.bz2'
-visualisation_result_dir = '../../data/temp/1-visualisation.pkl.bz2'
+exploration_result_dir = '../../data/temp/1-exploration.pkl.bz2'
 dim_reduction_result_dir = '../../data/temp/2-dim-reduction.pkl.bz2'
 normalised_result_dir = '../../data/temp/3-normalised.pkl.bz2'
 pca_result_dir = '../../data/temp/3-pca.pkl.bz2'
