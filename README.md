@@ -102,7 +102,14 @@ conda activate <env-name>
 
 ### Install Dependencies
 
-Install all required dependencies.
+First, install the `v0.17_fixes` branch of
+[`madmom`](https://github.com/CPJKU/madmom).
+
+```sh
+pip install git+https://github.com/CPJKU/madmom.git@v0.17_fixes
+```
+
+Then, install the remaining required dependencies.
 
 ```sh
 pip install -r requirements.txt
