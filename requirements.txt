@@ -13,3 +13,4 @@ seaborn==0.12.2
 spotdl==4.1.8
 spotipy==2.23.0
 ydata_profiling==4.1.2
+kaleido==0.2.1
